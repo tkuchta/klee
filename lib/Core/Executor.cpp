@@ -1101,6 +1101,7 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
         current.pathOS << "0";
       }
     }
+
     return StatePair(0, &current);
   } else {
     TimerStatIncrementer timer(stats::forkTime);
@@ -2725,12 +2726,10 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
          it != ie; ++it) {
       uint64_t elementSize = it->second;
       ref<Expr> index = eval(ki, it->first, state).value;
-
       base = AddExpr::create(base,
                              MulExpr::create(Expr::createSExtToPointerWidth(index),
                                              Expr::createPointer(elementSize)));
     }
-
     if (kgepi->offset)
       base = AddExpr::create(base,
                              Expr::createPointer(kgepi->offset));
@@ -4161,12 +4160,12 @@ void Executor::executeMemoryOperation(ExecutionState &state,
   }
 
   if (!resolveSingleObject) {
+    // fast path: single in-bounds resolution
     if (!state.addressSpace.resolveOne(state, solver, address, op, success)) {
       address = toConstant(state, address, "resolveOne failure");
       success = state.addressSpace.resolveOne(cast<ConstantExpr>(address), op);
     }
-
-    // fast path: single in-bounds resolution
+    solver->setTimeout(time::Span());
 
     if (success) {
       const MemoryObject *mo = op.first;
