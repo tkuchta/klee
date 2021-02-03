@@ -1,6 +1,6 @@
 // RUN: %clang %s -g -emit-llvm %O0opt -c -o %t.bc
 // RUN: rm -rf %t.klee-out
-// RUN: %klee --posix-runtime --libc=uclibc --output-dir=%t.klee-out --single-object-resolution %t.bc > %t.log 2>&1
+// RUN: %klee --output-dir=%t.klee-out --single-object-resolution %t.bc > %t.log 2>&1
 // RUN: FileCheck %s -input-file=%t.log
 
 #include "klee/klee.h"
